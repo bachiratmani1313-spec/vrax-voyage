@@ -1,0 +1,15 @@
+# Robots.txt pour Vrax Agence de Voyages
+# Permettre à tous les robots d'explorer le site
+
+User-agent: *
+Allow: /
+
+# Interdire l'accès aux API sensibles
+Disallow: /api/detect-opportunities
+Disallow: /api/scrape-promotions
+
+# Sitemap
+Sitemap: https://vrax-voyages.com/sitemap.xml
+
+# Crawl-delay optionnel
+Crawl-delay: 1

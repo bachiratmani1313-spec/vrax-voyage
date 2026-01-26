@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Partner {
+  id          String      @id @default(cuid())
+  name        String
+  logo        String
+  category    String
+  link        String
+  commission  Float       // Commission en pourcentage
+  rating      Float       // Note moyenne (0-5)
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  promotions  Promotion[]
+  opportunities Opportunity[]
+
+  @@index([active])
+  @@index([category])
+}
+
+model Promotion {
+  id               String   @id @default(cuid())
+  partnerId        String
+  partner          Partner  @relation(fields: [partnerId], references: [id])
+  title            String
+  description      String
+  originalPrice    Float
+  discountedPrice  Float
+  discount         Float    // Pourcentage de réduction
+  destination      String
+  duration         String
+  imageUrl         String
+  affiliateLink    String
+  expiresAt        DateTime
+  featured         Boolean  @default(false)
+  active           Boolean  @default(true)
+  estimatedEarnings Float   @default(0)
+  detectedAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([active])
+  @@index([featured])
+  @@index([expiresAt])
+  @@index([partnerId])
+}
+
+model Opportunity {
+  id              String   @id @default(cuid())
+  type            String   // 'alert' ou 'opportunity'
+  title           String
+  description     String
+  potentialEarnings Float
+  urgency         String   // 'high', 'medium', 'low'
+  read            Boolean  @default(false)
+  partnerId       String?
+  partner         Partner? @relation(fields: [partnerId], references: [id])
+  partnerName     String?
+  promotionId     String?
+  dismissed       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([read])
+  @@index([urgency])
+  @@index([type])
+  @@index([partnerId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================== SYSTÈME D'AFFILIATION MULTI-NIVEAUX ====================
+
+model Affiliate {
+  id                String        @id @default(cuid())
+  email             String        @unique
+  password          String        // Mot de passe hashé
+  firstName         String
+  lastName          String
+  phone             String?
+  address           String?
+
+  // Coordonnées bancaires pour recevoir les paiements
+  iban              String
+  bic               String
+  bankName          String
+
+  // Génération automatique du code de parrainage
+  referralCode      String        @unique
+
+  // Le parrain qui a recommandé cet affilié
+  referredBy        String?
+  referrer          Affiliate?    @relation("ReferralRelation", fields: [referredBy], references: [id])
+
+  // Les affiliés recommandés par cet affilié
+  referrals         Affiliate[]   @relation("ReferralRelation")
+
+  // Statistiques de l'affilié
+  level             Int           @default(1) // 1-3 niveaux
+  status            String        @default("pending") // 'pending', 'active', 'suspended'
+  totalClicks       Int           @default(0)
+  totalSales        Int           @default(0)
+  totalCommission   Float         @default(0)
+  paidAmount        Float         @default(0)
+  pendingAmount     Float         @default(0)
+
+  // Relations
+  sales             AffiliateSale[]
+  payoutRequests    PayoutRequest[]
+  payments          AffiliatePayment[]
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([referredBy])
+  @@index([status])
+}
+
+model AffiliateSale {
+  id              String    @id @default(cuid())
+
+  // Lien avec l'affilié
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id])
+
+  // Informations sur la vente
+  partnerId       String
+  partnerName     String
+  promotionId     String?
+  saleAmount      Float
+  commissionRate  Float      // Taux de commission (ex: 10%)
+
+  // Calcul multi-niveaux
+  level           Int        // 1-3 pour les affiliés
+  affiliateShare  Float      // Ce que l'affilié gagne (85%, 70%, 55%)
+  vraxShare       Float      // Ce que Vrax gagne (15%, 30%, 45%)
+
+  // Tracking
+  trackingLink    String
+  referralCode    String?
+  clickId         String?
+
+  // Statut de la vente
+  status          String     @default("pending") // 'pending', 'confirmed', 'rejected'
+
+  // Dates
+  saleDate        DateTime   @default(now())
+  confirmedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([saleDate])
+}
+
+model PayoutRequest {
+  id              String        @id @default(cuid())
+
+  // Lien avec l'affilié
+  affiliateId     String
+  affiliate       Affiliate     @relation(fields: [affiliateId], references: [id])
+
+  // Détails de la demande
+  amount          Float
+  iban            String
+  bic             String
+  bankName        String
+
+  // Statut du paiement
+  status          String        @default("pending") // 'pending', 'approved', 'processing', 'completed', 'rejected'
+
+  // Référence de transaction
+  transactionId   String?       // Référence du virement SEPA
+  referenceNumber String?       // Numéro de référence unique
+
+  // Notes et justification
+  notes           String?
+  rejectionReason String?
+
+  // Dates
+  requestedAt     DateTime      @default(now())
+  approvedAt      DateTime?
+  processedAt     DateTime?
+  completedAt     DateTime?
+
+  // Relation avec le paiement effectif
+  paymentId       String?
+  payment         AffiliatePayment? @relation(fields: [paymentId], references: [id])
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+model AffiliatePayment {
+  id              String          @id @default(cuid())
+
+  // Lien avec l'affilié
+  affiliateId     String
+  affiliate       Affiliate       @relation(fields: [affiliateId], references: [id])
+
+  // Détails du paiement
+  amount          Float
+  iban            String
+  bic             String
+  bankName        String
+
+  // Références bancaires
+  transactionId   String?         // Référence du virement SEPA
+  referenceNumber String?         // Numéro de référence
+
+  // Méthode de paiement
+  method          String          @default("sepa") // 'sepa', 'manual', 'other'
+
+  // Statut
+  status          String          @default("completed") // 'pending', 'completed', 'failed', 'cancelled'
+
+  // Notes
+  notes           String?
+
+  // Dates
+  processedAt     DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+
+  // Relation avec la demande de paiement
+  payoutRequests  PayoutRequest[]
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([processedAt])
+}
