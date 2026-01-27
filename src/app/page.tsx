@@ -1487,7 +1487,7 @@ export default function VraxTravelSite() {
                       </CardContent>
                     </Card>
 
-                    {/* Paiement disponible */}
+                    // Paiement disponible
                     {dashboardData && dashboardData.payout && (
                       <Card className="border-orange-200">
                         <CardHeader>
