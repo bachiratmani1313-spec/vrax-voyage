@@ -1486,6 +1486,7 @@ export default function VraxTravelSite() {
                         </div>
                       </CardContent>
                     </Card>
+                    )}  {/* Fin de la condition dashboardData.affiliate */}
 
                     {dashboardData && dashboardData.payout && (
                       <Card className="border-orange-200">
