@@ -67,3 +67,9 @@ mini-services/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env.local
+.env.*.local
+prisma/dev.db
+prisma/dev.db-journal
