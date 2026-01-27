@@ -589,92 +589,101 @@ export default function VraxTravelSite() {
     return `${window.location.origin}/go/${referralCode}?type=promotion&id=${promoId}`;
   };
 
+  // Générer l'URL directe d'une promotion (sans tracking)
+  const getDirectPromotionUrl = (promo: Promotion) => {
+    // Pour l'instant, utilise le lien partenaire (sera remplacé par les vrais liens)
+    return promo.partner.link;
+  };
+
   // Copier le lien de promotion
-  const copyPromotionLink = (promoId: string) => {
-    const url = getPromotionTrackingUrl(promoId);
+  const copyPromotionLink = (promo: Promotion) => {
+    // Essayer d'abord le lien avec tracking affilié
+    const trackingUrl = getPromotionTrackingUrl(promo.id);
+    // Si pas connecté, utiliser le lien direct
+    const url = trackingUrl || getDirectPromotionUrl(promo);
     if (url) {
       navigator.clipboard.writeText(url);
       alert('✅ Lien de promotion copié ! Partagez-le sur les réseaux sociaux.');
     } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
+      alert('❌ Impossible de générer le lien.');
     }
   };
 
   // Partager sur TikTok
   const shareToTikTok = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      window.open(`https://www.tiktok.com/share?url=${encodeURIComponent(url)}`, '_blank');
-    } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
-    }
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    window.open(`https://www.tiktok.com/share?url=${encodeURIComponent(url)}`, '_blank');
   };
 
   // Partager sur Instagram
   const shareToInstagram = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      const text = `✈️ ${promo.title}\n\n🏢 ${promo.partner.name}\n\n${promo.description}\n\n📍 ${promo.destination}\n⏱️ ${promo.duration}\n💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}\n\n#Voyage #Vacances #Travel #${promo.partner.name.replace(/\s+/g, '')} #${promo.destination.replace(/\s+/g, '')}`;
-      navigator.clipboard.writeText(text);
-      alert('✅ Texte copié ! Collez-le sur Instagram (Story ou Post).');
-    } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
-    }
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    const text = `✈️ ${promo.title}\n\n🏢 ${promo.partner.name}\n\n${promo.description}\n\n📍 ${promo.destination}\n⏱️ ${promo.duration}\n💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}\n\n#Voyage #Vacances #Travel #${promo.partner.name.replace(/\s+/g, '')} #${promo.destination.replace(/\s+/g, '')}`;
+    navigator.clipboard.writeText(text);
+    alert('✅ Texte copié ! Collez-le sur Instagram (Story ou Post).');
   };
 
   // Partager sur Facebook
   const shareToFacebook = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      const text = `✈️ Offre exclusive ${promo.partner.name} : ${promo.title}\n\n${promo.description}\n\n📍 ${promo.destination} | ⏱️ ${promo.duration} | 💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}\n\n#${promo.partner.name.replace(/\s+/g, '')} #Voyage #Travel`;
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, '_blank');
-    } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
-    }
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    const text = `✈️ Offre exclusive ${promo.partner.name} : ${promo.title}\n\n${promo.description}\n\n📍 ${promo.destination} | ⏱️ ${promo.duration} | 💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}\n\n#${promo.partner.name.replace(/\s+/g, '')} #Voyage #Travel`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, '_blank');
   };
 
   // Partager sur LinkedIn
   const shareToLinkedIn = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      const text = `✈️ Offre voyage exclusive chez ${promo.partner.name}\n\n${promo.title}\n\n${promo.description}\n\nDestination : ${promo.destination}\nDurée : ${promo.duration}\nPrix : ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}`;
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
-    } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
-    }
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    const text = `✈️ Offre voyage exclusive chez ${promo.partner.name}\n\n${promo.title}\n\n${promo.description}\n\nDestination : ${promo.destination}\nDurée : ${promo.duration}\nPrix : ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}`;
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
   };
 
   // Partager sur WhatsApp
   const shareToWhatsApp = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      const text = `✈️ *${promo.title}*\n\n🏢 *${promo.partner.name}*\n\n${promo.description}\n\n📍 ${promo.destination}\n⏱️ ${promo.duration}\n💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-    } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
-    }
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    const text = `✈️ *${promo.title}*\n\n🏢 *${promo.partner.name}*\n\n${promo.description}\n\n📍 ${promo.destination}\n⏱️ ${promo.duration}\n💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   // Partager sur Twitter/X
   const shareToTwitter = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      const text = `✈️ ${promo.partner.name} : ${promo.title}\n\n${promo.destination} | ${promo.duration}\n💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}\n\n#Voyage #Travel #${promo.partner.name.replace(/\s+/g, '')} #${promo.destination.replace(/\s+/g, '')}`;
-      window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-    } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
-    }
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    const text = `✈️ ${promo.partner.name} : ${promo.title}\n\n${promo.destination} | ${promo.duration}\n💰 ${promo.discountedPrice}€ (-${promo.discount}%)\n\n👉 ${url}\n\n#Voyage #Travel #${promo.partner.name.replace(/\s+/g, '')} #${promo.destination.replace(/\s+/g, '')}`;
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
   };
 
   // Partager sur Snapchat
   const shareToSnapchat = (promo: Promotion) => {
-    const url = getPromotionTrackingUrl(promo.id);
-    if (url) {
-      const text = `${promo.partner.name} : ${promo.title} - ${promo.destination}\n\n👉 ${url}`;
-      navigator.clipboard.writeText(text);
-      alert('✅ Lien copié ! Collez-le dans Snapchat pour partager.');
+    const url = getPromotionTrackingUrl(promo.id) || getDirectPromotionUrl(promo);
+    const text = `${promo.partner.name} : ${promo.title} - ${promo.destination}\n\n👉 ${url}`;
+    navigator.clipboard.writeText(url);
+    alert('✅ Lien copié ! Collez-le dans Snapchat pour partager.');
+  };
+
+  // Voir une promotion depuis une alerte
+  const viewPromotionFromAlert = (opp: Opportunity) => {
+    if (opp.promotionId) {
+      // Ouvrir l'onglet promotions et scroller vers la promotion
+      setActiveTab('promotions');
+      setTimeout(() => {
+        const promoElement = document.getElementById(`promo-${opp.promotionId}`);
+        if (promoElement) {
+          promoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          promoElement.classList.add('ring-2', 'ring-orange-500');
+          setTimeout(() => {
+            promoElement.classList.remove('ring-2', 'ring-orange-500');
+          }, 3000);
+        }
+      }, 300);
     } else {
-      alert('❌ Vous devez être inscrit comme affilié pour partager des liens.');
+      alert('❌ Cette alerte n\'est pas liée à une promotion spécifique.');
+    }
+  };
+
+  // Ignorer une alerte/opportunité
+  const dismissAlert = (opp: Opportunity) => {
+    setOpportunities(prev => prev.filter(o => o.id !== opp.id));
+    if (opp.type === 'alert') {
+      setUnreadAlerts(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -849,7 +858,7 @@ export default function VraxTravelSite() {
                 ))
               ) : (
                 filteredPromotions.map((promo) => (
-                  <Card key={promo.id} className="overflow-hidden border-orange-200 hover:shadow-xl transition-all duration-300 group">
+                  <Card id={`promo-${promo.id}`} key={promo.id} className="overflow-hidden border-orange-200 hover:shadow-xl transition-all duration-300 group">
                     <div className="relative h-48 overflow-hidden">
                       <img
                         src={promo.imageUrl}
@@ -910,7 +919,7 @@ export default function VraxTravelSite() {
                     <CardFooter className="space-y-4">
                       <div className="w-full">
                         <Button
-                          onClick={() => copyPromotionLink(promo.id)}
+                          onClick={() => copyPromotionLink(promo)}
                           className="w-full bg-orange-500 hover:bg-orange-600"
                         >
                           <Copy className="h-4 w-4 mr-2" />
@@ -1142,10 +1151,18 @@ export default function VraxTravelSite() {
                           </Badge>
                         </div>
                         <div className="flex gap-2 pt-2">
-                          <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
+                          <Button
+                            size="sm"
+                            onClick={() => viewPromotionFromAlert(opp)}
+                            className="bg-orange-500 hover:bg-orange-600"
+                          >
                             Voir la promotion
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => dismissAlert(opp)}
+                          >
                             Ignorer
                           </Button>
                         </div>
