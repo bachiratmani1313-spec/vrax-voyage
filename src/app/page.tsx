@@ -1488,44 +1488,46 @@ export default function VraxTravelSite() {
                     </Card>
 
                     {/* Paiement disponible */}
-                    <Card className="border-orange-200">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Wallet className="h-5 w-5 text-orange-500" />
-                          Demande de paiement
-                        </CardTitle>
-                        <CardDescription>
-                          {dashboardData.payout.message}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span>Progression vers le seuil de paiement</span>
-                            <span className="font-semibold">{dashboardData.payout.progress}%</span>
+                    {dashboardData && dashboardData.payout && (
+                      <Card className="border-orange-200">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Wallet className="h-5 w-5 text-orange-500" />
+                            Demande de paiement
+                          </CardTitle>
+                          <CardDescription>
+                            {dashboardData.payout.message}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span>Progression vers le seuil de paiement</span>
+                              <span className="font-semibold">{dashboardData.payout.progress}%</span>
+                            </div>
+                            <Progress value={parseFloat(dashboardData.payout.progress)} className="h-3" />
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>Montant disponible: {dashboardData.payout.availableAmount}€</span>
+                              <span>Seuil minimum: {dashboardData.payout.threshold}€</span>
+                            </div>
                           </div>
-                          <Progress value={parseFloat(dashboardData.payout.progress)} className="h-3" />
-                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                            <span>Montant disponible: {dashboardData.payout.availableAmount}€</span>
-                            <span>Seuil minimum: {dashboardData.payout.threshold}€</span>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={requestPayout}
-                          disabled={!dashboardData.payout.canRequest || requestingPayout}
-                          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
-                        >
-                          {requestingPayout ? (
-                            'Traitement...'
-                          ) : (
-                            <>
-                              <Wallet className="h-4 w-4 mr-2" />
-                              Demander le paiement ({dashboardData.payout.availableAmount}€)
-                            </>
-                          )}
-                        </Button>
-                      </CardContent>
-                    </Card>
+                          <Button
+                            onClick={requestPayout}
+                            disabled={!dashboardData.payout.canRequest || requestingPayout}
+                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+                          >
+                            {requestingPayout ? (
+                              'Traitement...'
+                            ) : (
+                              <>
+                                <Wallet className="h-4 w-4 mr-2" />
+                                Demander le paiement ({dashboardData.payout.availableAmount}€)
+                              </>
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
 
                     {/* Ventes récentes */}
                     <Card className="border-orange-200">
