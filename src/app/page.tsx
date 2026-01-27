@@ -108,6 +108,8 @@ export default function VraxTravelSite() {
   const [affiliateIban, setAffiliateIban] = useState('');
   const [affiliateBic, setAffiliateBic] = useState('');
   const [affiliateBankName, setAffiliateBankName] = useState('');
+  const [affiliatePhone, setAffiliatePhone] = useState('');
+  const [affiliateAddress, setAffiliateAddress] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [registering, setRegistering] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
@@ -376,7 +378,7 @@ export default function VraxTravelSite() {
       console.error('Erreur:', error);
       alert('❌ Erreur lors de l\'initialisation des affiliations.');
     } finally {
-      setInitializing(false);
+      setInitializingAffiliates(false);
     }
   };
 
@@ -455,6 +457,8 @@ export default function VraxTravelSite() {
           iban: affiliateIban,
           bic: affiliateBic,
           bankName: affiliateBankName,
+          phone: affiliatePhone,
+          address: affiliateAddress,
           referralCode: referralCode || undefined,
         })
       });
@@ -708,6 +712,16 @@ export default function VraxTravelSite() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={initializeAffiliates}
+                disabled={initializingAffiliates}
+                className="bg-green-500 text-white hover:bg-green-600"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                {initializingAffiliates ? 'Initialisation...' : 'Initialiser Partenaires'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={autoRegisterAffiliates}
                 disabled={initializingAffiliates}
                 className="bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
@@ -725,7 +739,12 @@ export default function VraxTravelSite() {
                 <TrendingUp className="h-4 w-4 mr-2" />
                 {initializingAffiliates ? 'Post...' : 'Poster Promotions'}
               </Button>
-              <Button variant="outline" size="sm" className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab('alerts')}
+                className="relative"
+              >
                 <Bell className="h-4 w-4" />
                 {unreadAlerts > 0 && (
                   <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
@@ -1335,47 +1354,50 @@ export default function VraxTravelSite() {
                     </div>
 
                     {/* Code de parrainage */}
-                    <Card className="border-orange-200">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Share2 className="h-5 w-5 text-orange-500" />
-                          Votre code de parrainage
-                        </CardTitle>
-                        <CardDescription>
-                          Partagez ce code pour recruter des affiliés et gagner des commissions sur leurs ventes
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center gap-3">
-                          <Input
-                            value={dashboardData.affiliate.referralCode}
-                            readOnly
-                            className="font-mono text-lg"
-                          />
-                          <Button
-                            onClick={copyReferralCode}
-                            variant="outline"
-                            className="flex-shrink-0"
-                          >
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copier
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    {dashboardData && dashboardData.affiliate && (
+                      <Card className="border-orange-200">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Share2 className="h-5 w-5 text-orange-500" />
+                            Votre code de parrainage
+                          </CardTitle>
+                          <CardDescription>
+                            Partagez ce code pour recruter des affiliés et gagner des commissions sur leurs ventes
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-3">
+                            <Input
+                              value={dashboardData.affiliate.referralCode}
+                              readOnly
+                              className="font-mono text-lg"
+                            />
+                            <Button
+                              onClick={copyReferralCode}
+                              variant="outline"
+                              className="flex-shrink-0"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copier
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
                     {/* Partage sur les réseaux sociaux */}
-                    <Card className="border-orange-200">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Share2 className="h-5 w-5 text-orange-500" />
-                          Partagez vos liens sur les réseaux sociaux
-                        </CardTitle>
-                        <CardDescription>
-                          Chaque clic généré depuis ces liens sera automatiquement tracké et rémunéré !
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
+                    {dashboardData && dashboardData.affiliate && (
+                      <Card className="border-orange-200">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Share2 className="h-5 w-5 text-orange-500" />
+                            Partagez vos liens sur les réseaux sociaux
+                          </CardTitle>
+                          <CardDescription>
+                            Chaque clic généré depuis ces liens sera automatiquement tracké et rémunéré !
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                         <Alert className="bg-green-50 border-green-200">
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
                           <AlertDescription className="ml-2">
@@ -1619,6 +1641,23 @@ export default function VraxTravelSite() {
                       value={referralCode}
                       onChange={(e) => setReferralCode(e.target.value)}
                       placeholder="Code de votre parrain"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Téléphone</label>
+                    <Input
+                      type="tel"
+                      value={affiliatePhone}
+                      onChange={(e) => setAffiliatePhone(e.target.value)}
+                      placeholder="+32 4XX XX XX XX"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Adresse</label>
+                    <Input
+                      value={affiliateAddress}
+                      onChange={(e) => setAffiliateAddress(e.target.value)}
+                      placeholder="Rue, Code postal, Ville, Pays"
                     />
                   </div>
                 </CardContent>
