@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vrax-Voyage</title>
+  </head>
+  <script data-noptimize="1" data-cfasync="false" data-wpfc-render="false">
+    (function () {
+        var script = document.createElement("script");
+        script.async = 1;
+        script.src = 'https://tpembars.com/NDk5ODAy.js?t=499802';
+        document.head.appendChild(script);
+    })();
+  </script>
+  <body>
+    <!-- Le contenu de votre site est généré par React -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
